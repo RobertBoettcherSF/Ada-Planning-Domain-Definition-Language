@@ -179,7 +179,7 @@ begin
    Put_Line ("TEST 10 — BFS Multi-Step Optimal");
    declare
       Prob : constant Problem := (Initial => Make_State (PA'[1 => At_A]),
-                                  Goal_Pos => Make_State (PA'[1 => Door_Open)),
+                                  Goal_Pos => Make_State (PA'[1 => Door_Open]),
                                   Goal_Neg => Empty_State);
       P : constant Plan := Solve_BFS (Dom, Prob);
    begin
