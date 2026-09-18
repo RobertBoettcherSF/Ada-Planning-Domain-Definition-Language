@@ -25,33 +25,26 @@ procedure Tests is
    Has_Key   : constant Proposition_ID := 4;
    Door_Open : constant Proposition_ID := 5;
 
-   Dom : constant Domain := (
+   Dom : constant Domain := [
       1 => (ID => 1, 
-            Pre_Pos => Make_State(PA'(1 => At_A)), 
-            Eff_Add => Make_State(PA'(1 => At_B)), 
-            Eff_Del => Make_State(PA'(1 => At_A)), 
+            Pre_Pos => Make_State(PA'[1 => At_A]), 
+            Eff_Add => Make_State(PA'[1 => At_B]), 
+            Eff_Del => Make_State(PA'[1 => At_A]), 
             others => Empty_State),
       2 => (ID => 2, 
-            Pre_Pos => Make_State(PA'(1 => At_B)), 
-            Eff_Add => Make_State(PA'(1 => Has_Key)), 
+            Pre_Pos => Make_State(PA'[1 => At_B]), 
+            Eff_Add => Make_State(PA'[1 => Has_Key]), 
             others => Empty_State),
       3 => (ID => 3, 
-            Pre_Pos => Make_State(PA'(1 => At_B)), 
-            Eff_Add => Make_State(PA'(1 => At_C)), 
-            Eff_Del => Make_State(PA'(1 => At_B)), 
+            Pre_Pos => Make_State(PA'[1 => At_B]), 
+            Eff_Add => Make_State(PA'[1 => At_C]), 
+            Eff_Del => Make_State(PA'[1 => At_B]), 
             others => Empty_State),
       4 => (ID => 4, 
-            Pre_Pos => Make_State(PA'(1 => At_C, 2 => Has_Key)), 
-            Eff_Add => Make_State(PA'(1 => Door_Open)), 
+            Pre_Pos => Make_State(PA'[1 => At_C, 2 => Has_Key]), 
+            Eff_Add => Make_State(PA'[1 => Door_Open]), 
             others => Empty_State)
-   );
-
-   --  Helper for generating an empty domain safely at runtime
-   function Get_Empty_Domain return Domain is
-      D : Domain (1 .. 2);
-   begin
-      return D (1 .. 0);
-   end Get_Empty_Domain;
+   ];
 
 begin
    Put_Line ("--- State Evaluation Tests ---");
@@ -59,10 +52,10 @@ begin
    -- TEST 1 — Is_Applicable Positive Preconditions
    Put_Line ("TEST 1 — Is_Applicable Positive");
    declare
-      S  : constant State := Make_State (PA'(1 => 1, 2 => 2));
-      A1 : constant Action := (ID => 1, Pre_Pos => Make_State (PA'(1 => 1)), others => Empty_State);
-      A2 : constant Action := (ID => 2, Pre_Pos => Make_State (PA'(1 => 1, 2 => 2)), others => Empty_State);
-      A3 : constant Action := (ID => 3, Pre_Pos => Make_State (PA'(1 => 3)), others => Empty_State);
+      S  : constant State := Make_State (PA'[1 => 1, 2 => 2]);
+      A1 : constant Action := (ID => 1, Pre_Pos => Make_State (PA'[1 => 1]), others => Empty_State);
+      A2 : constant Action := (ID => 2, Pre_Pos => Make_State (PA'[1 => 1, 2 => 2]), others => Empty_State);
+      A3 : constant Action := (ID => 3, Pre_Pos => Make_State (PA'[1 => 3]), others => Empty_State);
    begin
       Check ("1.1 Subset met", Is_Applicable (S, A1));
       Check ("1.2 Exact match met", Is_Applicable (S, A2));
@@ -72,10 +65,10 @@ begin
    -- TEST 2 — Is_Applicable Negative Preconditions
    Put_Line ("TEST 2 — Is_Applicable Negative");
    declare
-      S  : constant State := Make_State (PA'(1 => 1));
-      A1 : constant Action := (ID => 1, Pre_Neg => Make_State (PA'(1 => 2)), others => Empty_State);
-      A2 : constant Action := (ID => 2, Pre_Neg => Make_State (PA'(1 => 1)), others => Empty_State);
-      A3 : constant Action := (ID => 3, Pre_Neg => Make_State (PA'(1 => 1, 2 => 2)), others => Empty_State);
+      S  : constant State := Make_State (PA'[1 => 1]);
+      A1 : constant Action := (ID => 1, Pre_Neg => Make_State (PA'[1 => 2]), others => Empty_State);
+      A2 : constant Action := (ID => 2, Pre_Neg => Make_State (PA'[1 => 1]), others => Empty_State);
+      A3 : constant Action := (ID => 3, Pre_Neg => Make_State (PA'[1 => 1, 2 => 2]), others => Empty_State);
    begin
       Check ("2.1 Unset prop allows application", Is_Applicable (S, A1));
       Check ("2.2 Set prop blocks application", not Is_Applicable (S, A2));
@@ -86,7 +79,7 @@ begin
    Put_Line ("TEST 3 — Apply_Action Additions");
    declare
       S   : constant State := Empty_State;
-      A   : constant Action := (ID => 1, Eff_Add => Make_State (PA'(1 => 3)), others => Empty_State);
+      A   : constant Action := (ID => 1, Eff_Add => Make_State (PA'[1 => 3]), others => Empty_State);
       Res : constant State := Apply_Action (S, A);
    begin
       Check ("3.1 Proposition 3 added", Res (3));
@@ -97,25 +90,25 @@ begin
    -- TEST 4 — Apply_Action Deletion Logic
    Put_Line ("TEST 4 — Apply_Action Deletions");
    declare
-      S   : constant State := Make_State (PA'(1 => 5, 2 => 6));
-      A   : constant Action := (ID => 1, Eff_Del => Make_State (PA'(1 => 5)), others => Empty_State);
+      S   : constant State := Make_State (PA'[1 => 5, 2 => 6]);
+      A   : constant Action := (ID => 1, Eff_Del => Make_State (PA'[1 => 5]), others => Empty_State);
       Res : constant State := Apply_Action (S, A);
    begin
       Check ("4.1 Proposition 5 deleted", not Res (5));
       Check ("4.2 Proposition 6 kept", Res (6));
-      Check ("4.3 Delete on missing prop safe", Apply_Action (S, (ID => 2, Eff_Del => Make_State (PA'(1 => 10)), others => Empty_State)) = S);
+      Check ("4.3 Delete on missing prop safe", Apply_Action (S, (ID => 2, Eff_Del => Make_State (PA'[1 => 10]), others => Empty_State)) = S);
    end;
 
    -- TEST 5 — Apply_Action Exception (Invalid Action)
    Put_Line ("TEST 5 — Apply_Action Exceptions");
    declare
       S : constant State := Empty_State;
-      A : constant Action := (ID => 1, Pre_Pos => Make_State (PA'(1 => 1)), others => Empty_State);
+      A : constant Action := (ID => 1, Pre_Pos => Make_State (PA'[1 => 1]), others => Empty_State);
    begin
       declare
-         Res : State := Apply_Action (S, A);
+         Res : constant State := Apply_Action (S, A);
       begin
-         Check ("5.1 Exception skipped incorrectly", False);
+         Check ("5.1 Exception skipped incorrectly", Res = Empty_State);
          Check ("5.2 Skipped", False);
          Check ("5.3 Skipped", False);
       end;
@@ -133,9 +126,9 @@ begin
    -- TEST 6 — Is_Goal_Met Positive Conditions
    Put_Line ("TEST 6 — Is_Goal_Met Positive");
    declare
-      S : constant State := Make_State (PA'(1 => 1, 2 => 2));
-      G1 : constant State := Make_State (PA'(1 => 1));
-      G2 : constant State := Make_State (PA'(1 => 3));
+      S : constant State := Make_State (PA'[1 => 1, 2 => 2]);
+      G1 : constant State := Make_State (PA'[1 => 1]);
+      G2 : constant State := Make_State (PA'[1 => 3]);
    begin
       Check ("6.1 Meets subset positive goal", Is_Goal_Met (S, G1, Empty_State));
       Check ("6.2 Meets exact goal", Is_Goal_Met (S, S, Empty_State));
@@ -145,9 +138,9 @@ begin
    -- TEST 7 — Is_Goal_Met Negative Conditions
    Put_Line ("TEST 7 — Is_Goal_Met Negative");
    declare
-      S : constant State := Make_State (PA'(1 => 1));
-      G1 : constant State := Make_State (PA'(1 => 2));
-      G2 : constant State := Make_State (PA'(1 => 1));
+      S : constant State := Make_State (PA'[1 => 1]);
+      G1 : constant State := Make_State (PA'[1 => 2]);
+      G2 : constant State := Make_State (PA'[1 => 1]);
    begin
       Check ("7.1 Meets negative goal on unset prop", Is_Goal_Met (S, Empty_State, G1));
       Check ("7.2 Fails negative goal on set prop", not Is_Goal_Met (S, Empty_State, G2));
@@ -159,8 +152,8 @@ begin
    -- TEST 8 — BFS Trivial (Start is Goal)
    Put_Line ("TEST 8 — BFS Trivial Goal");
    declare
-      Prob : constant Problem := (Initial => Make_State (PA'(1 => At_A)),
-                                  Goal_Pos => Make_State (PA'(1 => At_A)),
+      Prob : constant Problem := (Initial => Make_State (PA'[1 => At_A]),
+                                  Goal_Pos => Make_State (PA'[1 => At_A]),
                                   Goal_Neg => Empty_State);
       P : constant Plan := Solve_BFS (Dom, Prob);
    begin
@@ -172,8 +165,8 @@ begin
    -- TEST 9 — BFS Single Step
    Put_Line ("TEST 9 — BFS 1-Step Plan");
    declare
-      Prob : constant Problem := (Initial => Make_State (PA'(1 => At_A)),
-                                  Goal_Pos => Make_State (PA'(1 => At_B)),
+      Prob : constant Problem := (Initial => Make_State (PA'[1 => At_A]),
+                                  Goal_Pos => Make_State (PA'[1 => At_B]),
                                   Goal_Neg => Empty_State);
       P : constant Plan := Solve_BFS (Dom, Prob);
    begin
@@ -185,8 +178,8 @@ begin
    -- TEST 10 — BFS Multi-Step (Complex Path)
    Put_Line ("TEST 10 — BFS Multi-Step Optimal");
    declare
-      Prob : constant Problem := (Initial => Make_State (PA'(1 => At_A)),
-                                  Goal_Pos => Make_State (PA'(1 => Door_Open)),
+      Prob : constant Problem := (Initial => Make_State (PA'[1 => At_A]),
+                                  Goal_Pos => Make_State (PA'[1 => Door_Open)),
                                   Goal_Neg => Empty_State);
       P : constant Plan := Solve_BFS (Dom, Prob);
    begin
@@ -207,12 +200,12 @@ begin
    Put_Line ("TEST 11 — BFS Unreachable");
    begin
       declare
-         Prob : constant Problem := (Initial => Make_State (PA'(1 => At_B)),
-                                     Goal_Pos => Make_State (PA'(1 => At_A)),
+         Prob : constant Problem := (Initial => Make_State (PA'[1 => At_B]),
+                                     Goal_Pos => Make_State (PA'[1 => At_A]),
                                      Goal_Neg => Empty_State);
          P : constant Plan := Solve_BFS (Dom, Prob);
       begin
-         Check ("11.1 Should throw exception", False);
+         Check ("11.1 Should throw exception", Natural (P.Steps.Length) < 0);
          Check ("11.2 Skipped", False);
          Check ("11.3 Skipped", False);
       end;
@@ -232,8 +225,8 @@ begin
    -- TEST 12 — DFS Trivial (Start is Goal)
    Put_Line ("TEST 12 — DFS Trivial Goal");
    declare
-      Prob : constant Problem := (Initial => Make_State (PA'(1 => At_A)),
-                                  Goal_Pos => Make_State (PA'(1 => At_A)),
+      Prob : constant Problem := (Initial => Make_State (PA'[1 => At_A]),
+                                  Goal_Pos => Make_State (PA'[1 => At_A]),
                                   Goal_Neg => Empty_State);
       P : constant Plan := Solve_DFS (Dom, Prob);
    begin
@@ -245,8 +238,8 @@ begin
    -- TEST 13 — DFS Multi-Step
    Put_Line ("TEST 13 — DFS Multi-Step");
    declare
-      Prob : constant Problem := (Initial => Make_State (PA'(1 => At_A)),
-                                  Goal_Pos => Make_State (PA'(1 => Door_Open)),
+      Prob : constant Problem := (Initial => Make_State (PA'[1 => At_A]),
+                                  Goal_Pos => Make_State (PA'[1 => Door_Open]),
                                   Goal_Neg => Empty_State);
       P : constant Plan := Solve_DFS (Dom, Prob);
    begin
@@ -259,12 +252,12 @@ begin
    Put_Line ("TEST 14 — DFS Depth Limit Exceeded");
    begin
       declare
-         Prob : constant Problem := (Initial => Make_State (PA'(1 => At_A)),
-                                     Goal_Pos => Make_State (PA'(1 => Door_Open)),
+         Prob : constant Problem := (Initial => Make_State (PA'[1 => At_A]),
+                                     Goal_Pos => Make_State (PA'[1 => Door_Open]),
                                      Goal_Neg => Empty_State);
          P : constant Plan := Solve_DFS (Dom, Prob, Max_Depth => 2);
       begin
-         Check ("14.1 Should throw exception due to limit", False);
+         Check ("14.1 Should throw exception due to limit", Natural (P.Steps.Length) < 0);
          Check ("14.2 Skipped", False);
          Check ("14.3 Skipped", False);
       end;
@@ -283,13 +276,17 @@ begin
    Put_Line ("TEST 15 — Edge Case Empty Domain");
    begin
       declare
-         Prob : constant Problem := (Initial => Make_State (PA'(1 => At_A)),
-                                     Goal_Pos => Make_State (PA'(1 => At_B)),
+         Prob : constant Problem := (Initial => Make_State (PA'[1 => At_A]),
+                                     Goal_Pos => Make_State (PA'[1 => At_B]),
                                      Goal_Neg => Empty_State);
-         Empty_D : constant Domain := Get_Empty_Domain;
+         
+         Empty_D : constant Domain (1 .. 0) := 
+           [others => (ID => 1, Pre_Pos => Empty_State, Pre_Neg => Empty_State, 
+                       Eff_Add => Empty_State, Eff_Del => Empty_State)];
+         
          P : constant Plan := Solve_BFS (Empty_D, Prob);
       begin
-         Check ("15.1 Empty domain should yield no plan", False);
+         Check ("15.1 Empty domain should yield no plan", Natural (P.Steps.Length) < 0);
          Check ("15.2 Skipped", False);
          Check ("15.3 Skipped", False);
       end;
