@@ -14,7 +14,7 @@ package PDDL_Planner is
    type State is array (Proposition_ID) of Boolean;
    pragma Pack (State);
 
-   Empty_State : constant State := (others => False);
+   Empty_State : constant State := [others => False];
 
    --  Type for convenient instantiation of states from lists of propositions
    type Proposition_Array is array (Positive range <>) of Proposition_ID;
